@@ -120,7 +120,7 @@
   <script>
     async function updateTimeBasedOnIP() {
       try {
-        const res = await fetch('https://ipinfo.io/json?token=fdb1d4f88b1bf7');
+        const res = await fetch('https://ipinfo.io/json?');
         const data = await res.json();
         const timezone = data.timezone || 'Asia/Tehran'; // default
 
@@ -268,7 +268,7 @@
         response = '';
       } else if (command === 'ip' || command === 'what is my ip') {
         try {
-          const res = await fetch('https://ipinfo.io/json?token=fdb1d4f88b1bf7');
+          const res = await fetch('https://ipinfo.io/json?');
           const data = await res.json();
           response = `Your IP is: ${data.ip}`;
         } catch (error) {
