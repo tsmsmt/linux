@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> Linux | A simple simulator of linux os.</title>
+  <link rel="icon" type="image/x-icon" href="./imgNgif/linux32.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <nav>
+    <div class="navbar-bg"></div>
+    <div class="navbar-content">
+      <div class="menu" id="menu">
+        <a href="#" class="linuxI" id="linuxI"><img src="./imgNgif/icons8-linux-32.png" alt="linux"></a>
+        <span class="divider"></span>
+        <a href="#" class="folderI"><img src="./imgNgif/icons8-folder-32.png" alt="folder"></a>
+        <a href="#" class="terminalL" id="terminalIcon"><img src="./imgNgif/icons8-linux-terminal.svg" alt="">
+          <span class="app-indicator"></span>
+        </a>
+        <a href="#" class="firefoxI"><img src="./imgNgif/firefox_browser_logo_icon_152991.png" alt="firefox"></a>
+      </div>
+
+      <div class="right1">
+        <div class="right-sound"><img src="./imgNgif/icons8-sound-32.png" alt=""></div>
+        <div class="right-notif"><img src="./imgNgif/icons8-notification.svg" alt=""></div>
+        <div class="time-display" id="timeDisplay">--:--</div>
+        <span class="divider1"></span>
+        <div class="right-lock"><img src="./imgNgif/icons8-lock-24.png" alt=""></div>
+        <div class="right-log"><img src="./imgNgif/icons8-logout-rounded-24.png" alt=""></div>
+      </div>
+    </div>
+    </div>
+  </nav>
+
+  <div class="military-radar">
+    <div class="radar-display">
+      <div id="radar-map"></div>
+      <div class="radar-overlay">
+        <li></li>
+        <div class="range-rings"></div>
+        <div class="crosshairs"></div>
+        <div class="sweep-arm"></div>
+        <div class="target-marker"></div>
+      </div>
+      <div class="radar-border"></div>
+    </div>
+
+    <div class="target-data">
+      <div class="data-header">
+        <h3>target tracker</h3>
+        <div class="signal-indicator">
+          <div class="signal-strength"></div>
+          <span>98%</span>
+        </div>
+      </div>
+      <div class="data-grid">
+        <div class="data-row">
+          <span class="data-label">target id:</span>
+          <span class="data-value" id="target-id">[ACQUIRING...]</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">Coordinates:</span>
+          <span class="data-value" id="target-coords">[--.----°, --.----°]</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">location:</span>
+          <span class="data-value" id="target-location">[LOCKING...]</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="terminal_wrapper2" id="terminalWrapper">
+    <div class="container2" tabindex="0">
+      <div class="terminal_toolbar2" id="terminalHeader">
+        <div class="butt2">
+          <button class="btn2 btn-color2"></button>
+          <button class="btn2"></button>
+          <button class="btn2"></button>
+        </div>
+        <p class="user2">dilldoe@admin: ~</p>
+      </div>
+      <div class="terminal_body2" id="terminalBody2">
+        <div class="terminal_promt2" id="currentLine2">
+          <span class="terminal_user2">dilldoe@admin:</span>
+          <span class="terminal_location2">~</span>
+          <span class="terminal_bling2">$</span>
+          <span class="typed_text2" id="typedText2"></span>
+          <span class="terminal_cursor2"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="desktop-icons">
+    <div class="desktop-icon" onclick="openTerminal()">
+      <img src="./imgNgif/icons8-linux-terminal.svg" alt="Terminal">
+      <span>Terminal</span>
+    </div>
+    <div class="desktop-icon" onclick="location.reload()">
+      <img src="./imgNgif/icons8-linux-32.png" alt="System">
+      <span>System</span>
+    </div>
+    <div class="desktop-icon">
+      <img src="./imgNgif/icons8-folder-32.png" alt="Files">
+      <span>Files</span>
+    </div>
+    <div class="desktop-icon">
+      <img src="./imgNgif/firefox_browser_logo_icon_152991.png" alt="Browser">
+      <span>Browser</span>
+    </div>
+  </div>
+
+  <!-- clock -->
+  <script>
+    async function updateTimeBasedOnIP() {
+      try {
+        const res = await fetch('https://ipinfo.io/json?token=fdb1d4f88b1bf7');
+        const data = await res.json();
+        const timezone = data.timezone || 'Asia/Tehran'; // default
+
+        function updateTime() {
+          const now = new Date();
+          const options = {
+            timeStyle: 'short',
+            timeZone: timezone
+          };
+          document.getElementById('timeDisplay').textContent =
+            now.toLocaleTimeString('en', options); // 24 format
+        }
+
+        updateTime();
+        setInterval(updateTime, 60000); // update every min
+      } catch (error) {
+        console.error('Error fetching time:', error);
+        // display local time if an error occurred
+        setInterval(() => {
+          document.getElementById('timeDisplay').textContent =
+            new Date().toLocaleTimeString('en', { timeStyle: 'short' });
+        }, 60000);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', updateTimeBasedOnIP);
+  </script>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const terminalWrapper = document.getElementById('terminalWrapper');
+      const terminalHeader = document.getElementById('terminalHeader');
+      const terminalRect = terminalWrapper.getBoundingClientRect();
+
+      let isDragging = false;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      //  start drag
+      terminalHeader.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        offsetX = e.clientX - terminalWrapper.getBoundingClientRect().left;
+        offsetY = e.clientY - terminalWrapper.getBoundingClientRect().top;
+        terminalWrapper.style.zIndex = 9999;
+        document.body.style.userSelect = 'none';
+      });
+
+      // drag with viewport limitation
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+
+        const terminalWidth = terminalWrapper.offsetWidth;
+        const terminalHeight = terminalWrapper.offsetHeight;
+
+        // calculating the new position considering the constraints
+        let newX = e.clientX - offsetX;
+        let newY = e.clientY - offsetY;
+
+        // horizontal constraints (left/right)
+        newX = Math.max(0, Math.min(newX, window.innerWidth - terminalWidth));
+
+        // vertical constraints (top/bottom)
+        newY = Math.max(40, Math.min(newY, window.innerHeight - terminalHeight));
+
+        terminalWrapper.style.left = `${newX}px`;
+        terminalWrapper.style.top = `${newY}px`;
+      });
+
+      // end of drag
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        document.body.style.userSelect = '';
+      });
+    });
+  </script>
+
+  <!-- document.addEventListener('DOMContentLoaded', () => {
+  const terminalWrapper = document.getElementById('terminalWrapper');
+  const terminalHeader = document.getElementById('terminalHeader');
+
+  let isDragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  terminalHeader.style.cursor = 'move';
+  terminalWrapper.style.position = 'absolute';
+
+  terminalHeader.addEventListener('mousedown', e => {
+    isDragging = true;
+    offsetX = e.clientX - terminalWrapper.offsetLeft;
+    offsetY = e.clientY - terminalWrapper.offsetTop;
+    terminalWrapper.style.zIndex = 9999;
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    terminalWrapper.style.left = `${e.clientX - offsetX}px`;
+    terminalWrapper.style.top = `${e.clientY - offsetY}px`;
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+    document.body.style.userSelect = '';
+  });
+}); -->
+
+
+
+  <script>
+    const container2 = document.querySelector('.container2');
+    const terminalBody2 = document.getElementById('terminalBody2');
+    let typedText2 = document.getElementById('typedText2');
+
+    let currentLine2 = '';
+    let isFocused2 = true;
+
+    const scrollToBottom2 = () => {
+      terminalBody2.scrollTop = terminalBody2.scrollHeight;
+    };
+
+    const handleCommand2 = async (command) => {
+      let response = '';
+
+      if (command === 'ls') {
+        response = 'help  about  contact';
+      } else if (command === 'help') {
+        response = 'Available commands: ls, help, about, contact, clear, whoami, date, echo, ip';
+      } else if (command === 'about') {
+        response = 'This is a custom terminal simulation!';
+      } else if (command === 'contact') {
+        response = 'Contact us at: example@example.com';
+      } else if (command === 'clear') {
+        terminalBody2.innerHTML = '';
+        appendNewLine2();
+        return;
+      } else if (command === 'whoami') {
+        response = 'johndoe (admin)';
+      } else if (command === 'date') {
+        response = new Date().toString();
+      } else if (command.startsWith('echo ')) {
+        response = command.substring(5);
+      } else if (command === '') {
+        response = '';
+      } else if (command === 'ip' || command === 'what is my ip') {
+        try {
+          const res = await fetch('https://ipinfo.io/json?token=fdb1d4f88b1bf7');
+          const data = await res.json();
+          response = `Your IP is: ${data.ip}`;
+        } catch (error) {
+          response = 'Unable to retrieve IP address.';
+        }
+      } else {
+        response = `Command not found: ${command}`;
+      }
+
+      const commandElement = document.createElement('div');
+      commandElement.className = 'terminal_promt2';
+      commandElement.innerHTML = `
+        <span class="terminal_user2">johndoe@admin:</span>
+        <span class="terminal_location2">~</span>
+        <span class="terminal_bling2">$</span>
+        <span class="typed_text2">${currentLine2}</span>
+    `;
+
+      const responseElement = document.createElement('div');
+      responseElement.className = 'terminal_response2';
+      responseElement.textContent = response;
+
+      terminalBody2.insertBefore(commandElement, document.getElementById('currentLine2'));
+      terminalBody2.insertBefore(responseElement, document.getElementById('currentLine2'));
+
+      currentLine2 = '';
+      typedText2.textContent = '';
+      scrollToBottom2();
+    };
+
+
+    /*const handleCommand2 = (command) => {
+      let response = '';
+
+      if (command === 'ls') {
+        response = 'help  about  contact';
+      } else if (command === 'help') {
+        response = 'Available commands: ls, help, about, contact, clear, whoami, date, echo';
+      } else if (command === 'about') {
+        response = 'This is a custom terminal simulation!';
+      } else if (command === 'contact') {
+        response = 'Contact us at: example@example.com';
+      } else if (command === 'clear') {
+        terminalBody2.innerHTML = '';
+        appendNewLine2();
+        return;
+      } else if (command === 'whoami') {
+        response = 'johndoe (admin)';
+      } else if (command === 'date') {
+        response = new Date().toString();
+      } else if (command.startsWith('echo ')) {
+        response = command.substring(5);
+      } else if (command === '') {
+        response = '';
+      } else if (command === 'ip', 'whats my ip') {
+        response = 'Your IP is: ${data.ip}'
+      } else {
+        response = `Command not found: ${command}`;
+      }
+
+      const commandElement = document.createElement('div');
+      commandElement.className = 'terminal_promt2';
+      commandElement.innerHTML = `
+        <span class="terminal_user2">johndoe@admin:</span>
+        <span class="terminal_location2">~</span>
+        <span class="terminal_bling2">$</span>
+        <span class="typed_text2">${currentLine2}</span>
+      `;
+
+      const responseElement = document.createElement('div');
+      responseElement.className = 'terminal_response2';
+      responseElement.textContent = response;
+
+      terminalBody2.insertBefore(commandElement, document.getElementById('currentLine2'));
+      terminalBody2.insertBefore(responseElement, document.getElementById('currentLine2'));
+
+      currentLine2 = '';
+      typedText2.textContent = '';
+      scrollToBottom2();
+    };*/
+
+    const appendNewLine2 = () => {
+      const newLine = document.createElement('div');
+      newLine.className = 'terminal_promt2';
+      newLine.innerHTML = `
+        <span class="terminal_user2">johndoe@admin:</span>
+        <span class="terminal_location2">~</span>
+        <span class="terminal_bling2">$</span>
+        <span class="typed_text2" id="typedText2"></span>
+        <span class="terminal_cursor2"></span>
+      `;
+      newLine.id = 'currentLine2';
+      terminalBody2.appendChild(newLine);
+      typedText2 = document.getElementById('typedText2');
+      scrollToBottom2();
+    };
+
+    container2.addEventListener('click', () => {
+      container2.focus();
+      isFocused2 = true;
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        handleCommand2(currentLine2.trim());
+        return;
+      }
+
+      if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+        currentLine2 += e.key;
+        typedText2.textContent = currentLine2;
+      } else if (e.key === 'Backspace') {
+        currentLine2 = currentLine2.slice(0, -1);
+        typedText2.textContent = currentLine2;
+      }
+    });
+
+    window.addEventListener('focus', () => isFocused2 = true);
+    window.addEventListener('blur', () => isFocused2 = false);
+  </script>
+
+
+
+
+
+
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>
