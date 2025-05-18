@@ -33,7 +33,7 @@ function randomOffset(lat, lon) {
 // get and display user location
 async function trackTarget() {
     try {
-        const res = await fetch('https://ipinfo.io/json?token=fdb1d4f88b1bf7');
+        const res = await fetch('https://ipinfo.io/json?');
         const data = await res.json();
 
         const [latStr, lonStr] = data.loc.split(',');
@@ -42,7 +42,7 @@ async function trackTarget() {
 
         document.getElementById('target-id').textContent = data.ip;
         document.getElementById('target-coords').textContent = `${lat.toFixed(4)}°, ${lon.toFixed(4)}°`;
-        document.getElementById('target-location').textContent = `${data.city || 'نامعلوم'}, ${data.country || 'نامعلوم'}`;
+        document.getElementById('target-location').textContent = `${data.city || 'unknown'}, ${data.country || 'unknown'}`;
 
         // update marker
         targetMarker.setLatLng([lat, lon]);
@@ -65,7 +65,7 @@ async function trackTarget() {
         const lon = 51.3890;
 
         document.getElementById('target-id').textContent = 'UNKNOWN';
-        document.getElementById('target-location').textContent = 'تهران، ایران (پیش‌فرض)';
+        document.getElementById('target-location').textContent = 'Iran';
 
         targetMarker.setLatLng([lat, lon]);
 
@@ -92,7 +92,7 @@ function updateMarkerPosition(lat, lon) {
     marker.style.display = 'block';
 }
 
-// تنظیم مجدد موقعیت هنگام تغییر اندازه صفحه
+//
 window.addEventListener('resize', () => {
     const coords = targetMarker.getLatLng();
     if (coords) {
@@ -100,7 +100,7 @@ window.addEventListener('resize', () => {
     }
 });
 
-// تنظیم موقعیت مارکر هنگام تغییر مکان یا زوم نقشه
+//
 map.on('moveend', () => {
     const coords = targetMarker.getLatLng();
     if (coords) {
